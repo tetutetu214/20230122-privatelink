@@ -1,0 +1,2 @@
+# Client側で作成したエンドポイントのDNS名宛にcurlコマンドを実行
+curl vpce-xxxxxxxxxxx.vpce-svc-xxxxxxxxxxxxxxx.ap-northeast-1.vpce.amazonaws.com 
