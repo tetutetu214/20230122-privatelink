@@ -1,2 +1,35 @@
 # Client側で作成したエンドポイントのDNS名宛にcurlコマンドを実行
 curl vpce-xxxxxxxxxxx.vpce-svc-xxxxxxxxxxxxxxx.ap-northeast-1.vpce.amazonaws.com 
+
+scp -i inamura-pem inamura.pem ec2-user@54.178.190.42:/tmp/
+
+
+Host bastion
+  # 踏み台サーバのパブリックIP(DNS名でも指定可能)
+  HostName 54.178.190.42
+  # sshポート番号(省略可能)
+  Port 22
+  # ログインするユーザ名
+  User ec2-user
+  # ローカル端末に保存した、踏み台サーバの秘密鍵のパス指定
+  IdentityFile ~/.ssh/inamura.pem
+
+Host private
+  # プライベートサーバのプライベートIP(DNS名でも指定可能)
+  HostName 192.168.10.66
+  # sshポート番号(省略可能)
+  Port 22
+  # ログインするユーザ名
+  User ec2-user
+  # 踏み台サーバを経由してログイン
+  ProxyCommand ssh bastion -W %h:%p
+  # ローカル端末に保存した、プライベートサーバの秘密鍵のパス指定
+  IdentityFile ~/.ssh/inamura.pem
+
+
+
+  # Client側で作成したエンドポイントのDNS名宛にcurlコマンドを実行
+$ curl vpce-xxxxxxxxxxx.vpce-svc-xxxxxxxxxxxxxxx.ap-northeast-1.vpce.amazonaws.com 
+
+vpce-05348a423454eefd3-v799vi6t.vpce-svc-06ef0698f8d517817.ap-northeast-1.vpce.amazonaws.com
+vpce-05348a423454eefd3-v799vi6t-ap-northeast-1a.vpce-svc-06ef0698f8d517817.ap-northeast-1.vpce.amazonaws.com

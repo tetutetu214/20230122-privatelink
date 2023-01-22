@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Create Provider-Server-Env to PrivateLink-PrivateWeb-dev-Env"
+Description: "Create PrivateLink-PrivateWeb"
     
 # ------------------------------------------------------------
 #  Metadate
@@ -141,7 +141,13 @@ Resources:
       AcceptanceRequired: true
       NetworkLoadBalancerArns:
         - !Ref NLB
-
+        
+  VPCEndpointPermission:
+    Type: AWS::EC2::VPCEndpointServicePermissions
+    Properties: 
+      AllowedPrincipals: 
+        - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+      ServiceId: !Ref VPCEndpointService
 # ------------------------------------------------------------
 # Output Parameters
 # ------------------------------------------------------------
