@@ -120,7 +120,7 @@ Outputs:
     Export:
       Name: !Sub "${PJName}-vpc-cidr"
 # Subnet
-  PrivateSubnetA:
+  PrivateSubnet:
     Value: !Ref PrivateSubnetA
     Export:
-      Name: !Sub "${PJName}-private-subneta"
+      Name: !Sub "${PJName}-private-subnet"
