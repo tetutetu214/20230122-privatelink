@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Create Client-Server-Env to PrivateLink-PrivateWeb-dev-Env"
+Description: "Create Client-Server"
     
 # ------------------------------------------------------------
 #  Metadate
@@ -31,6 +31,7 @@ Parameters:
     Default: "t2.micro"
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: "inamura"
   UserName:
     Type: 'String'
     Default: "inamura"
@@ -56,6 +57,25 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${PJPrefix}-ClientServer-inamura"
+        - Key: UserName
+          Value: !Ref UserName 
+
+### BassionServer ###
+  BassionServer:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !Ref EC2AMI
+      InstanceType: !Ref InstanceType 
+      KeyName: !Ref KeyName
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: !ImportValue cfn-network-B-public-subnet
+          GroupSet:
+            - !Ref ClientSG
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-BassionServer-inamura"
         - Key: UserName
           Value: !Ref UserName 
 
@@ -87,7 +107,7 @@ Resources:
     Properties:
       VpcId: !ImportValue cfn-network-B-vpc
       ServiceName: !ImportValue cfn-ec2-VPCEndpoint
-      VpcEndpointType: "Interface"
+      VpcEndpointType: Interface
       SubnetIds: 
         - !ImportValue cfn-network-B-private-subnet
       SecurityGroupIds:
@@ -97,7 +117,9 @@ Resources:
 # Output Parameters
 # ------------------------------------------------------------
 Outputs:
-  VPCEndpoint:
-    Value: !Sub "${DnsEntries}"
+  VPCEndpointDNS:
+    Value: !Join
+      - ',' 
+      - !GetAtt VpcEndpoint.DnsEntries
     Export:
-      Name: !Sub "${PJPrefix}-VPCEndpoint"
+      Name: !Sub "${PJPrefix}-EndpointDNS"
