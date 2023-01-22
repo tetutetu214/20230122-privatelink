@@ -16,6 +16,7 @@ Metadata:
         Parameters: 
           - VPCCIDR
           - PrivateSubnetACIDR
+          - PublicSubnetACIDR
           - UserName
 
 
@@ -26,6 +27,8 @@ Metadata:
         default: "VPC CIDR"
       PrivateSubnetACIDR: 
         default: "PrivateSubnetA CIDR"
+      PublicSubnetACIDR: 
+        default: "PublicSubnetA CIDR"
       UserName: 
         default: "TagsValue UserName"
 
@@ -41,11 +44,15 @@ Parameters:
   VPCCIDR:
     Type: String
     Default: "192.168.0.0/16"
-
+  
   PrivateSubnetACIDR:
     Type: String
     Default: "192.168.10.0/24"
 
+  PublicSubnetACIDR:
+    Type: String
+    Default: "192.168.20.0//24"
+  
   UserName:
     Type: String 
     Default: "inamura"
@@ -68,6 +75,21 @@ Resources:
         - Key: User
           Value: !Ref UserName
 
+# InternetGateway Create
+  InternetGateway: 
+    Type: "AWS::EC2::InternetGateway"
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJName}-igw"
+        - Key: User
+          Value: !Ref UserName
+# IGW Attach
+  InternetGatewayAttachment: 
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties: 
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC 
 # ------------------------------------------------------------#
 #  Subnet
 # ------------------------------------------------------------#          
@@ -84,9 +106,22 @@ Resources:
         - Key: User
           Value: !Ref UserName
 
+# Public SubnetA Create
+  PublicSubnetA: 
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: "ap-northeast-1a"
+      CidrBlock: !Ref PublicSubnetACIDR
+      VpcId: !Ref VPC 
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJName}-public-subnet-a"
+        - Key: User
+          Value: !Ref UserName
+
 # ------------------------------------------------------------#
 #  RouteTable
-# ------------------------------------------------------------#          
+# ------------------------------------------------------------#
 # Private RouteTableA Create
   PrivateRouteTable: 
     Type: "AWS::EC2::RouteTable"
@@ -98,6 +133,36 @@ Resources:
         - Key: User
           Value: !Ref UserName
 
+# Public RouteTableA Create
+  PublicRouteTable: 
+    Type: "AWS::EC2::RouteTable"
+    Properties: 
+      VpcId: !Ref VPC 
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJName}-public-route"          
+        - Key: User
+          Value: !Ref UserName
+# ------------------------------------------------------------#
+# Routing
+# ------------------------------------------------------------# 
+# PublicRouteA Create
+  PublicRoute: 
+    Type: "AWS::EC2::Route"
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable 
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway 
+
+# ------------------------------------------------------------#
+# RouteTable Associate
+# ------------------------------------------------------------# 
+# PublicRouteTable Associate SubnetA
+  PublicSubnetARouteTableAssociation: 
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      SubnetId: !Ref PublicSubnetA 
+      RouteTableId: !Ref PublicRouteTable
 # PrivateRouteTable Associate SubnetA
   PrivateSubnetARouteTableAssociation: 
     Type: "AWS::EC2::SubnetRouteTableAssociation"
@@ -123,3 +188,7 @@ Outputs:
     Value: !Ref PrivateSubnetA
     Export:
       Name: !Sub "${PJName}-private-subnet"
+  PublicSubnet:
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: !Sub "${PJName}-public-subnet"
