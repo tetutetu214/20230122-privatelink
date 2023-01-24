@@ -13,7 +13,7 @@ Metadata:
           - InstanceType
           - KeyName
           - UserName
-          
+
 # ------------------------------------------------------------
 # Input Parameters
 # ------------------------------------------------------------
@@ -21,7 +21,7 @@ Parameters:
 ### Project Prefix ###
   PJPrefix:
     Type: 'String'
-    Default: "cfn-ec2"
+    Default: "cfn-ec2-client"
   EC2AMI:
     Type: 'String'
     Default: "ami-0bba69335379e17f8"
@@ -48,11 +48,12 @@ Resources:
       InstanceType: !Ref InstanceType 
       KeyName: !Ref KeyName
       NetworkInterfaces: 
-        - AssociatePublicIpAddress: "false"
+        - NetworkInterfaceId: !Ref ENI 
+        # - AssociatePublicIpAddress: "false"
           DeviceIndex: "0"
-          SubnetId: !ImportValue cfn-network-B-private-subnet
-          GroupSet:
-            - !Ref ClientSG
+        #   SubnetId: !ImportValue cfn-network-B-private-subnet
+        #   GroupSet:
+        #     - !Ref ClientSG
       Tags:
         - Key: Name
           Value: !Sub "${PJPrefix}-ClientServer-inamura"
@@ -77,6 +78,21 @@ Resources:
           Value: !Sub "${PJPrefix}-BassionServer-inamura"
         - Key: UserName
           Value: !Ref UserName 
+# ------------------------------------------------------------
+# ENI
+# ------------------------------------------------------------
+  ENI: 
+    Type: AWS::EC2::NetworkInterface 
+    Properties: 
+      Tags: 
+      - Key: UserName 
+        Value: !Ref UserName
+      SourceDestCheck: 'false' 
+      GroupSet: 
+      - !Ref ClientSG
+      SubnetId: !ImportValue cfn-network-B-private-subnet
+      PrivateIpAddress: 192.168.10.10
+
 
 # ------------------------------------------------------------
 # SecurityGroup
@@ -98,6 +114,28 @@ Resources:
           Value: !Sub "${PJPrefix}-Client-SG"
         - Key: UserName
           Value: !Ref UserName 
+
+  EndpointSG:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Endpoint SG"
+      GroupName: !Sub "${PJPrefix}-Endpoint-SG-inamura"
+      VpcId: !ImportValue cfn-network-B-vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort : 80
+          ToPort : 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort : 22
+          ToPort : 22
+          CidrIp: 0.0.0.0/0
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJPrefix}-Endpoint-SG"
+        - Key: UserName
+          Value: !Ref UserName 
+
 # ------------------------------------------------------------
 # EndPoint
 # ------------------------------------------------------------
@@ -105,12 +143,13 @@ Resources:
     Type: "AWS::EC2::VPCEndpoint"
     Properties:
       VpcId: !ImportValue cfn-network-B-vpc
-      ServiceName: !ImportValue cfn-ec2-VPCEndpoint
+      ServiceName: !ImportValue cfn-ec2-web-VPCEndpoint
       VpcEndpointType: Interface
+      PrivateDnsEnabled: true
       SubnetIds: 
         - !ImportValue cfn-network-B-private-subnet
       SecurityGroupIds:
-        - !Ref ClientSG
+        - !Ref EndpointSG
 
 # ------------------------------------------------------------
 # Output Parameters

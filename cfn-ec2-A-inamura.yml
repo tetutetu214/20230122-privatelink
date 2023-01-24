@@ -43,11 +43,13 @@ Resources:
       ImageId: !Ref EC2AMI
       InstanceType: !Ref InstanceType 
       NetworkInterfaces: 
-        - AssociatePublicIpAddress: "false"
+        # - AssociatePublicIpAddress: "false"
+        #   DeviceIndex: "0"
+        #   SubnetId: !ImportValue cfn-network-A-private-subnet
+        #   GroupSet:
+        #     - !Ref WebSG
+        - NetworkInterfaceId: !Ref ENI 
           DeviceIndex: "0"
-          SubnetId: !ImportValue cfn-network-A-private-subnet
-          GroupSet:
-            - !Ref WebSG
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -82,7 +84,22 @@ Resources:
           Value: !Sub "${PJPrefix}-Provider-Web-SG-inamura"
         - Key: UserName
           Value: !Ref UserName
-            
+# ------------------------------------------------------------
+# ENI
+# ------------------------------------------------------------
+  ENI: 
+    Type: AWS::EC2::NetworkInterface 
+    Properties: 
+      Tags: 
+      - Key: UserName 
+        Value: !Ref UserName
+      SourceDestCheck: 'false' 
+      GroupSet: 
+      - !Ref WebSG
+      SubnetId: !ImportValue cfn-network-A-private-subnet
+      PrivateIpAddress: 172.16.10.10
+
+
 # ------------------------------------------------------------
 # TargetGroup
 # ------------------------------------------------------------
