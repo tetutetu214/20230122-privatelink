@@ -51,7 +51,7 @@ Parameters:
 
   PublicSubnetACIDR:
     Type: String
-    Default: "192.168.20.0//24"
+    Default: "192.168.20.0/24"
   
   UserName:
     Type: String 
