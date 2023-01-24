@@ -19,7 +19,7 @@ Metadata:
 Parameters:
   PJPrefix:
     Type: 'String'
-    Default: "cfn-ec2"
+    Default: "cfn-ec2-web"
   EC2AMI:
     Type: 'String'
     Default: "ami-0bba69335379e17f8"
