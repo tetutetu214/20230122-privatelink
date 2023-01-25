@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create Route53"
+# ------------------------------------------------------------
+#  Metadate
+# ------------------------------------------------------------
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Parameters:
+          - PJPrefix
+          - EC2AMI
+          - InstanceType
+          - UserName
+
+# ------------------------------------------------------------
+# Input Parameters
+# ------------------------------------------------------------
+Parameters:
+  PJPrefix:
+    Type: 'String'
+    Default: "cfn-ec2-web"
+  EC2AMI:
+    Type: 'String'
+    Default: "ami-0bba69335379e17f8"
+  InstanceType:
+    Type: 'String'
+    Default: "t2.micro"
+  UserName:
+    Type: 'String'
+    Default: "inamura"
+
+# ------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------
+Resources:
+  Route53RecordSet:
+    Type: "AWS::Route53::RecordSet"
+    Properties:
+      Name: "inamura.test.cloud5.jp."
+      Type: "TXT"
+      AliasTarget: 
+        HostedZoneId: !ImportValue ut-alb-hostzoneid
+        DNSName: !ImportValue ut-alb-dnsname
+        EvaluateTargetHealth: true
+      HostedZoneId: "Z01000061EWXXK1FTAO6J"
+# ------------------------------------------------------------
+# Output
+# ------------------------------------------------------------
+Outputs:
+  RecordOutput1:
+    Value: !Ref Route53RecordSet
+    Export:
+      Name: ut-route53-name
